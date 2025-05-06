@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Temporizador (Stopwatch)</title>
+
+    <!-- Cargar React y ReactDOM desde el CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Babel para procesar JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <!-- Aquí React montará la app -->
+    <div id="root"></div>
+
+    <!-- Nuestro código JSX -->
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+      
+        const Stopwatch = () => {
+          const [time, setTime] = useState(0); // Tiempo en segundos
+          const [isRunning, setIsRunning] = useState(false); // Si el temporizador está corriendo
+          const [sessions, setSessions] = useState([]); // Lista de sesiones guardadas
+      
+          // useRef para guardar el ID del intervalo
+          const intervalRef = useRef(null);
+      
+          // useEffect para controlar el inicio y la limpieza del intervalo
+          useEffect(() => {
+            if (isRunning) {
+              console.log("Iniciando temporizador...");
+              intervalRef.current = setInterval(() => {
+                setTime((prevTime) => prevTime + 1);
+              }, 1000);
+            } else {
+              console.log("Pausando temporizador...");
+              clearInterval(intervalRef.current); // Limpiar el intervalo cuando el temporizador se detiene
+            }
+      
+            // Limpiar el intervalo al desmontar el componente
+            return () => clearInterval(intervalRef.current);
+          }, [isRunning]);
+      
+          // Función para alternar entre iniciar y pausar
+          const toggleTimer = () => {
+            setIsRunning((prevState) => !prevState);
+          };
+      
+          // Función para reiniciar el temporizador
+          const resetTimer = () => {
+            console.log("Reiniciando temporizador");
+            setTime(0);
+            setIsRunning(false);
+          };
+      
+          // Función para guardar la sesión
+          const saveSession = () => {
+            if (time > 0) {
+              console.log(`Guardando sesión de ${time} segundos`);
+              setSessions((prevSessions) => [...prevSessions, time]);
+              setTime(0);
+              setIsRunning(false); // Detener el temporizador después de guardar la sesión
+            }
+          };
+      
+          return (
+            <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+              <h1>Temporizador</h1>
+              <h2>{time} segundos</h2>
+      
+              <button onClick={toggleTimer} style={{ padding: '8px 16px' }}>
+                {isRunning ? 'Pausar' : 'Iniciar'}
+              </button>
+              <button onClick={resetTimer} style={{ padding: '8px 16px', marginLeft: '10px' }}>
+                Reiniciar
+              </button>
+              <button onClick={saveSession} style={{ padding: '8px 16px', marginLeft: '10px' }}>
+                Guardar Sesión
+              </button>
+      
+              <h2 style={{ marginTop: '30px' }}>Sesiones Registradas</h2>
+              <ul>
+                {sessions.map((session, index) => (
+                  <li key={index}>
+                    Sesión {index + 1}: {session} segundos
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        };
+      
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Stopwatch />);
+      </script>
+      
